@@ -1,23 +1,33 @@
 import random
 
 class puzzle:
-    def __init__(self):
 
-        self.goalstate = [1, 2, 3], [4, 5, 6], [7, 8, 0]
+    goalstate = [[1, 2, 3], [4, 5, 6], [7, 8, 0]]
 
-        # Creating 3x3 array for the gameboard
-        self.gameboard = [[0] * 3 for _ in range(3)]
+    def __init__(self, gameboard=None):
+        self.gameboard = gameboard
 
-        # Create array for numbers 0-8 and shuffle order
-        self.numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8]
-        random.shuffle(self.numbers)
+        if gameboard is None:
+            self.fill_gameboard()
 
     # Fill gameboard with randomized numbers
     def fill_gameboard(self):
-        for i in range(3):
-            for j in range(3):
-                # Pop first number from shuffled list and assign it to gameboard
-                self.gameboard[i][j] = self.numbers.pop(0)
+        # Creating 3x3 array for the gameboard
+        self.gameboard = [[0] * 3 for _ in range(3)]
+        # Shuffle numbers until solvable
+        is_solvable = False
+
+        while not is_solvable:
+
+            self.numbers = [1,2,3,4,5,6,7,0,8]
+            random.shuffle(self.numbers)
+            for i in range(3):
+                for j in range(3):
+                    # Pop first number from shuffled list and assign it to gameboard
+                    self.gameboard[i][j] = self.numbers.pop(0)
+
+            # Check if puzzle is solvable
+            is_solvable = self.is_solvable()
 
     # Print gameboard
     def print_gameboard(self):
@@ -52,9 +62,9 @@ class puzzle:
     
     def get_empty_field(self):
         for i, row in enumerate(self.gameboard):
-            for tile in row:
+            for k, tile in enumerate(row):
                 if tile == 0:
-                    return i, tile
+                    return i, k
                 
     def generate_posible_gameboards(self):
         row, tile = self.get_empty_field()
@@ -80,13 +90,24 @@ class puzzle:
         return posible_gameboards
     
     def reach_goalstate(self):
-        return self.gameboard == self.goalstate
+        return self.gameboard == puzzle.goalstate
     
 
+    def get_cost_simple(self):
+        cost = 0
+        for i in range(3):
+            for j in range(3):
+                if self.gameboard[i][j] != puzzle.goalstate[i][j]:
+                    cost += 1
+        return cost
+    
     def get_cost(self):
         cost = 0
         for i in range(3):
             for j in range(3):
-                if self.gameboard[i][j] != self.goalstate[i][j]:
-                    cost += 1
+                if self.gameboard[i][j] != puzzle.goalstate[i][j]:
+                    for k in range(3):
+                        for l in range(3):
+                            if self.gameboard[i][j] == puzzle.goalstate[k][l]:
+                                cost += abs(i - k) + abs(j - l)
         return cost

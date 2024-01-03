@@ -1,12 +1,14 @@
 from Nodes import nodes
-from Puzzle import puzzle
 
 class queue:
-    def __init__(self):
+    def __init__(self, heuristic_class):
         self.nodes = {}
         self.next_node_id = 0
         self.open_nodes = {}
         self.path = []
+        self.number_of_moves = 0
+
+        self.heuristic_class = heuristic_class
 
     def reset(self):
         self.nodes = {}
@@ -17,7 +19,7 @@ class queue:
 
 
     def set_first_node(self):
-        self.nodes[self.next_node_id] = nodes(self.next_node_id, None)
+        self.nodes[self.next_node_id] = nodes(self.next_node_id, None, self.heuristic_class, 0)
         self.open_nodes[self.next_node_id] = self.nodes[self.next_node_id]
         self.next_node_id += 1
 
@@ -30,42 +32,72 @@ class queue:
                 cheapest_node_id = node_id
         return cheapest_node_id
     
-    def add_node(self, parent_id, puzzle: puzzle):
-        self.nodes[self.next_node_id] = nodes(self.next_node_id, parent_id, puzzle)
+    def add_node(self, parent_id, gameboard):
+        self.nodes[self.next_node_id] = nodes(self.next_node_id, parent_id, self.heuristic_class, self.nodes[parent_id].cost, gameboard)
         self.nodes[parent_id].add_child(self.next_node_id)
         self.open_nodes[self.next_node_id] = self.nodes[self.next_node_id]
         self.next_node_id += 1
 
+    def check_if_node_exists(self, gameboard):
+        for node_id, node in self.nodes.items():
+            if node.puzzle.compare_gameboards(gameboard):
+                return True
+        return False
+
     def expand_node(self, node_id):
         self.open_nodes.pop(node_id)
-        node = self.nodes[node_id]
-        for gameboard in node.puzzle.generate_posible_gameboards():
-            if not node.puzzle.compare_gameboards(gameboard):
-                self.add_node(node_id, node.puzzle)
-
-        self.open_nodes.pop(node_id)
+        parent_node = self.nodes[node_id]
+        for gameboard in parent_node.puzzle.generate_posible_gameboards():
+            if not parent_node.puzzle.compare_gameboards(gameboard):
+                if not self.check_if_node_exists(gameboard):
+                    self.add_node(node_id, gameboard)
     
     def get_path(self, node_id):
         path = []
         while node_id is not None:
             path.append(node_id)
             node_id = self.nodes[node_id].parent
+        self.number_of_moves = len(path) - 1
         return path[::-1]
     
     def print_path(self):
+        previous_gameboard = None
+
         for node_id in self.path:
-            print(self.nodes[node_id].puzzle.gameboard)
+            current_gameboard = self.nodes[node_id].puzzle.gameboard
+
+            if previous_gameboard is not None:
+                print()
+                for i in range(len(current_gameboard)):
+                    for j in range(len(current_gameboard[i])):
+                        if current_gameboard[i][j] != previous_gameboard[i][j]:
+                            print("\033[31m{}\033[00m".format(current_gameboard[i][j]), end=' ')
+                        else:
+                            print(current_gameboard[i][j], end=' ')
+                    print()
+            
+            else:
+                for row in current_gameboard:
+                    for item in row:
+                        print(item, end=' ')
+                    print()
+
+            previous_gameboard = current_gameboard
+
+        
+        #print(f"Number of moves: {self.number_of_moves}")
+        
 
     def find_solution(self):
         self.reset()
 
         self.set_first_node()
-        if self.nodes[0].puzzle.is_solvable() == False:
-            return None
-        
         cheapest_node_id = 0
+
+        run = 0
         
         while True:
+            run += 1
             if cheapest_node_id is None:
                 return None
             if self.nodes[cheapest_node_id].puzzle.reach_goalstate():
@@ -73,3 +105,6 @@ class queue:
                 return None
             self.expand_node(cheapest_node_id)
             cheapest_node_id = self.find_cheapest_node()
+
+            print("Current node: " + str(cheapest_node_id) + " with cost: " + str(self.nodes[cheapest_node_id].cost) + "parent: " + str(self.nodes[cheapest_node_id].parent) + "run: " + str(run) + "current_cost: " + str(self.nodes[cheapest_node_id].puzzle.get_cost()) + "current_open_nodes: " + str(len(self.open_nodes)))
+            #self.nodes[cheapest_node_id].puzzle.print_gameboard()
