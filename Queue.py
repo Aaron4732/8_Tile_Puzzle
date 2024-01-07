@@ -6,6 +6,9 @@ import resource
 
 class queue:
     def __init__(self, heuristic_class):
+        """
+        :param heuristic_class: heuristic class used for node cost calculation
+        """
         self.nodes = {}
         self.next_node_id = 0
         self.open_nodes = {}
@@ -18,6 +21,9 @@ class queue:
 
         self.memory_usage = 0
     def reset(self):
+        """
+        :return: Resets queue to its initial state
+        """
         self.nodes = {}
         self.next_node_id = 0
         self.open_nodes = {}
@@ -31,6 +37,9 @@ class queue:
         self.next_node_id += 1
 
     def find_cheapest_node(self):
+        """
+        :return: ID of cheapest node
+        """
         cheapest_node = None
         cheapest_node_id = None
         for node_id, node in self.open_nodes.items():
@@ -40,18 +49,29 @@ class queue:
         return cheapest_node_id
     
     def add_node(self, parent_id, gameboard):
+        """
+        :param parent_id:ID of the parent node.
+        :param gameboard: Gameboard state of the new node
+        """
         self.nodes[self.next_node_id] = nodes(self.next_node_id, parent_id, self.heuristic_class, self.nodes[parent_id].cost, gameboard)
         self.nodes[parent_id].add_child(self.next_node_id)
         self.open_nodes[self.next_node_id] = self.nodes[self.next_node_id]
         self.next_node_id += 1
 
     def check_if_node_exists(self, gameboard):
+        """
+        :param gameboard: Gameboard state to check.
+        :return: True if node exists, False otherwise.
+        """
         for node_id, node in self.nodes.items():
             if node.puzzle.compare_gameboards(gameboard):
                 return True
         return False
 
     def expand_node(self, node_id):
+        """
+        :param node_id: ID of the node to expand.
+        """
         self.open_nodes.pop(node_id)
         parent_node = self.nodes[node_id]
         for gameboard in parent_node.puzzle.generate_posible_gameboards():
@@ -60,6 +80,10 @@ class queue:
                     self.add_node(node_id, gameboard)
     
     def get_path(self, node_id):
+        """
+        :param node_id: ID of the ending node.
+        :return: List of node IDs representing the path from start to end.
+        """
         path = []
         while node_id is not None:
             path.append(node_id)
@@ -124,5 +148,7 @@ class queue:
             #self.nodes[cheapest_node_id].puzzle.print_gameboard()
 
     def get_time(self):
+        """
+        :return: Time duration in seconds.
+        """
         return self.end_time - self.start_time
-    
