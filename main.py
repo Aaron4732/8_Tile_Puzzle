@@ -7,22 +7,34 @@ import Heuristic
 from Puzzle import puzzle
 
 def main():
-    test_queus = [
-        queue(Heuristic.manhattan_distance(puzzle.goalstate, 11)),
-        queue(Heuristic.hamming_distance(puzzle.goalstate, 11))
-    ] 
 
-    times = []
+    manhattan_memory_sum = 0
+    manhattan_time_sum = 0
+    hamming_memory_sum = 0
+    hamming_time_sum = 0
 
-    for test in test_queus:
-        start_time = time.time()
-        test.find_solution()
-        #test.print_path()
-        print("##################################################")
-        times.append(time.time() - start_time)
+    runs = 100
 
-    for i in range(len(times)):
-        print("Time for solution with " + test_queus[i].heuristic_class.__class__.__name__ + " heuristic: " + str(times[i]) + "number of moves: " + str(test_queus[i].number_of_moves))
+    for i in range(runs):
+        x = queue(Heuristic.manhattan_distance(puzzle.goalstate, 11)) 
+        x.find_solution()
+        print(x.get_time())
+        print(x.memory_usage)
+        manhattan_memory_sum += x.memory_usage
+        manhattan_time_sum += x.get_time()
+
+    for i in range(runs):
+        x = queue(Heuristic.hamming_distance(puzzle.goalstate, 11))
+        x.find_solution()
+        print(x.get_time())
+        print(x.memory_usage)
+        hamming_memory_sum += x.memory_usage
+        hamming_time_sum += x.get_time()
+
+    print(f"Average memory usage for Manhattan: {manhattan_memory_sum/runs}")
+    print(f"Average time usage for Manhattan: {manhattan_time_sum/runs}")
+    print(f"Average memory usage for Hamming: {hamming_memory_sum/runs}")
+    print(f"Average time usage for Hamming: {hamming_time_sum/runs}")
 
 if __name__ == "__main__":
     main()
