@@ -1,20 +1,28 @@
 # This is a sample Python script.
 # Press ⌃R to execute it or replace it with your code.
 # Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
-from Puzzle import Puzzle
-from Heuristic import Heuristic
+from Queue import queue
+import time
+import Heuristic
+from Puzzle import puzzle
 
 def main():
-    puzzle_instance = Puzzle()
-    puzzle_instance.fill_gameboard()
-    print("Gameboard:")
-    puzzle_instance.print_gameboard()
+    test_queus = [
+        queue(Heuristic.manhattan_distance(puzzle.goalstate, 11)),
+        queue(Heuristic.hamming_distance(puzzle.goalstate, 11))
+    ] 
 
-    if puzzle_instance.is_solvable():
-        print("The puzzle is solvable.")
-    else:
-        print("The puzzle is not solvable.")
+    times = []
 
+    for test in test_queus:
+        start_time = time.time()
+        test.find_solution()
+        #test.print_path()
+        print("##################################################")
+        times.append(time.time() - start_time)
+
+    for i in range(len(times)):
+        print("Time for solution with " + test_queus[i].heuristic_class.__class__.__name__ + " heuristic: " + str(times[i]) + "number of moves: " + str(test_queus[i].number_of_moves))
 
 if __name__ == "__main__":
     main()
