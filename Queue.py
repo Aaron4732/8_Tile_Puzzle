@@ -1,4 +1,8 @@
 from Nodes import nodes
+import time
+import psutil
+import tracemalloc
+import resource
 
 class queue:
     def __init__(self, heuristic_class):
@@ -10,6 +14,9 @@ class queue:
 
         self.heuristic_class = heuristic_class
 
+        self.end_time = 0
+
+        self.memory_usage = 0
     def reset(self):
         self.nodes = {}
         self.next_node_id = 0
@@ -91,6 +98,9 @@ class queue:
     def find_solution(self):
         self.reset()
 
+        self.start_time = time.time()
+        tracemalloc.start()
+
         self.set_first_node()
         cheapest_node_id = 0
 
@@ -102,9 +112,17 @@ class queue:
                 return None
             if self.nodes[cheapest_node_id].puzzle.reach_goalstate():
                 self.path = self.get_path(cheapest_node_id)
+                tracemalloc.stop()
+                self.end_time = time.time()
+                self.memory_usage = psutil.virtual_memory().used
+
                 return None
             self.expand_node(cheapest_node_id)
             cheapest_node_id = self.find_cheapest_node()
 
-            print("Current node: " + str(cheapest_node_id) + " with cost: " + str(self.nodes[cheapest_node_id].cost) + "parent: " + str(self.nodes[cheapest_node_id].parent) + "run: " + str(run) + "current_cost: " + str(self.nodes[cheapest_node_id].puzzle.get_cost()) + "current_open_nodes: " + str(len(self.open_nodes)))
+            #print("Current node: " + str(cheapest_node_id) + " with cost: " + str(self.nodes[cheapest_node_id].cost) + "parent: " + str(self.nodes[cheapest_node_id].parent) + "run: " + str(run) + "current_cost: " + str(self.nodes[cheapest_node_id].puzzle.get_cost()) + "current_open_nodes: " + str(len(self.open_nodes)))
             #self.nodes[cheapest_node_id].puzzle.print_gameboard()
+
+    def get_time(self):
+        return self.end_time - self.start_time
+    
