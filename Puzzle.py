@@ -5,6 +5,9 @@ class puzzle:
     goalstate = [[1, 2, 3], [4, 5, 6], [7, 8, 0]]
 
     def __init__(self, gameboard=None):
+        """
+        :param gameboard: Specific gameboard state to initialize with (optional)
+        """
         self.gameboard = gameboard
 
         if gameboard is None:
@@ -58,15 +61,25 @@ class puzzle:
         return new_gameboard
     
     def compare_gameboards(self, gameboard):
+        """
+        :param gameboard: Another gameboard to compare with.
+        :return: True if gameboards are identical, otherwise  false
+        """
         return self.gameboard == gameboard
     
     def get_empty_field(self):
+        """
+        :return: Row and column of the empty field
+        """
         for i, row in enumerate(self.gameboard):
             for k, tile in enumerate(row):
                 if tile == 0:
                     return i, k
                 
     def generate_posible_gameboards(self):
+        """
+        :return: A list of possible gameboards resulting from valid moves of the empty field.
+        """
         row, tile = self.get_empty_field()
         posible_gameboards = []
         
@@ -90,10 +103,16 @@ class puzzle:
         return posible_gameboards
     
     def reach_goalstate(self):
+        """
+        :return: True if current state equals goal state, otherwise false.
+        """
         return self.gameboard == puzzle.goalstate
     
 
     def get_cost_simple(self):
+        """
+        :return: number of tiles that are not in their goal position
+        """
         cost = 0
         for i in range(3):
             for j in range(3):
@@ -102,6 +121,9 @@ class puzzle:
         return cost
     
     def get_cost(self):
+        """
+        :return: The total sum of Manhattan distances for all tiles out of place.
+        """
         cost = 0
         for i in range(3):
             for j in range(3):
